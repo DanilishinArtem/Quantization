@@ -5,6 +5,7 @@ from model import Model
 from generator import Generator
 from learning import Learning
 from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader, TensorDataset
 # writer = SummaryWriter()
 
 
@@ -17,9 +18,11 @@ if __name__ == '__main__':
     generator.generateDataset(model)
     generator.saveParameters(model)
     generator.createNewParameters(model)
-    
+    dataset = TensorDataset(torch.stack(generator.inputDataset), torch.stack(generator.outputDataset))
+    batch_size = 32
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     writer = SummaryWriter(log_dir='/home/adanilishin/Quantization/logs/fp32')
-    learner = Learning(generator.trueParameters, generator.startParameters, model, generator.inputDataset, generator.outputDataset, optimizer, criterion)
+    learner = Learning(generator.trueParameters, generator.startParameters, model, data_loader, optimizer, criterion)
     learner.train(model, criterion, optimizer, writer, epochs=1000, precision='fp32')
     writer.close()
 
@@ -31,8 +34,10 @@ if __name__ == '__main__':
     generator.generateDataset(model)
     generator.saveParameters(model)
     generator.createNewParameters(model)
-
+    dataset = TensorDataset(torch.stack(generator.inputDataset), torch.stack(generator.outputDataset))
+    batch_size = 32
+    data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     writer = SummaryWriter(log_dir='/home/adanilishin/Quantization/logs/bf16')
-    learner = Learning(generator.trueParameters, generator.startParameters, model, generator.inputDataset, generator.outputDataset, optimizer, criterion)
+    learner = Learning(generator.trueParameters, generator.startParameters, model, data_loader, optimizer, criterion)
     learner.train(model, criterion, optimizer, writer, epochs=1000, precision='bf16')
     writer.close()

@@ -4,12 +4,11 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 class Learning:
-    def __init__(self, trueParameters: list, startParameters: list, model: nn.Module, inputDataset: list, outputDataset: list, optimizer: torch.optim.Optimizer, criterion: torch.nn.modules.loss._Loss) -> None:
+    def __init__(self, trueParameters: list, startParameters: list, model: nn.Module, dataset: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, criterion: torch.nn.modules.loss._Loss) -> None:
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
-        self.inputDataset = inputDataset
-        self.outputDataset = outputDataset
+        self.dataset = dataset
         self.trueParameters = trueParameters
         self.startParameters = startParameters
 
@@ -22,6 +21,7 @@ class Learning:
         return result
 
     def train(self, model, criterion, optimizer, writer, epochs=100, precision='fp16'):
+        model = model.cuda()
         scaler = torch.cuda.amp.GradScaler()
         if precision == 'bf16':
             autocast_dtype = torch.bfloat16
@@ -30,27 +30,27 @@ class Learning:
         else:
             autocast_dtype = torch.float32
         for epoch in range(epochs):
-            model.train()
-            optimizer.zero_grad()
-            inputs = torch.stack(self.inputDataset).cuda()
-            outputs = torch.stack(self.outputDataset).cuda()
-            model = model.cuda()
-            with torch.cuda.amp.autocast(dtype=autocast_dtype):
-                predictions = model(inputs)
-                loss = criterion(predictions, outputs)
-            normOfTrue = self.getNormOfWeights(model, self.trueParameters)
-            normOfStart = self.getNormOfWeights(model, self.startParameters)
-            print(f'epoch {epoch}, loss = {loss.item():.4f}, normOfTrue = {normOfTrue:.4f}, normOfStart = {normOfStart:.4f}')
-            writer.add_scalar('Loss/train', loss.item(), epoch)
-            writer.add_scalar('Norm/True', normOfTrue, epoch)
-            writer.add_scalar('Norm/Start', normOfStart, epoch)            
+            for inputs, outputs in self.dataset:
+                model.train()
+                optimizer.zero_grad()
+                inputs = torch.stack(inputs).cuda()
+                outputs = torch.stack(outputs).cuda()
+                with torch.cuda.amp.autocast(dtype=autocast_dtype):
+                    predictions = model(inputs)
+                    loss = criterion(predictions, outputs)
+                normOfTrue = self.getNormOfWeights(model, self.trueParameters)
+                normOfStart = self.getNormOfWeights(model, self.startParameters)
+                print(f'epoch {epoch}, loss = {loss.item():.4f}, normOfTrue = {normOfTrue:.4f}, normOfStart = {normOfStart:.4f}')
+                writer.add_scalar('Loss/train', loss.item(), epoch)
+                writer.add_scalar('Norm/True', normOfTrue, epoch)
+                writer.add_scalar('Norm/Start', normOfStart, epoch)            
 
-            # scaling backward
-            # scaler.scale(loss).backward()
-            # scaler.step(optimizer)
-            # scaler.update()
-            # optimizer.step()
-            
-            # regular backward
-            loss.backward()
-            optimizer.step()
+                # scaling backward
+                # scaler.scale(loss).backward()
+                # scaler.step(optimizer)
+                # scaler.update()
+                # optimizer.step()
+                
+                # regular backward
+                loss.backward()
+                optimizer.step()

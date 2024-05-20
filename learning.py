@@ -1,16 +1,18 @@
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
+from gradientLogger import GradientLogger
 
 
 class Learning:
-    def __init__(self, trueParameters: list, startParameters: list, model: nn.Module, dataset: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, criterion: torch.nn.modules.loss._Loss) -> None:
+    def __init__(self, trueParameters: list, startParameters: list, model: nn.Module, dataset: torch.utils.data.DataLoader, optimizer: torch.optim.Optimizer, criterion: torch.nn.modules.loss._Loss, gradLogger: GradientLogger) -> None:
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
         self.dataset = dataset
         self.trueParameters = trueParameters
         self.startParameters = startParameters
+        self.gradLogger = gradLogger
 
     def getNormOfWeights(self, model, parameters: list):
         result = 0
@@ -33,8 +35,8 @@ class Learning:
             for inputs, outputs in self.dataset:
                 model.train()
                 optimizer.zero_grad()
-                inputs = torch.stack(inputs).cuda()
-                outputs = torch.stack(outputs).cuda()
+                inputs = inputs.cuda()
+                outputs = outputs.cuda()
                 with torch.cuda.amp.autocast(dtype=autocast_dtype):
                     predictions = model(inputs)
                     loss = criterion(predictions, outputs)
@@ -54,3 +56,7 @@ class Learning:
                 # regular backward
                 loss.backward()
                 optimizer.step()
+
+                # gradient logging
+                self.gradLogger.log_gradients(epoch)
+        self.gradLogger.close()

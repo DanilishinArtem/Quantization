@@ -18,7 +18,7 @@ def setExperiment(type: str, log_dir: str, inputSize: int=3, outputSize: int=10,
     gradLogger = GradientLogger(model, log_dir + '/' + precisionName + '_' + str(batch_size) + '_grad')
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    generator = Generator(nSamples, 'normal', (0, 1))
+    generator = Generator(nSamples, 'normal', (0, 1), inputSize=inputSize, outputSize=outputSize)
     generator.generateDataset()
     generator.saveParameters(model)
     generator.createNewParameters(model)
@@ -48,11 +48,4 @@ if __name__ == '__main__':
 
     log_dir = '/home/adanilishin/Quantization/logs'
     # type: (random, regular)
-    setExperiment('random', log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=32, precisionName='float32', precision=torch.float32)
-    # setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=32, precisionName='float16', precision=torch.float16)
-    
-    # setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=64, precisionName='float32', precision=torch.float32)
-    # setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=64, precisionName='float16', precision=torch.float16)
-    
-    # setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=128, precisionName='float32', precision=torch.float32)
-    # setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=128, precisionName='float16', precision=torch.float16)
+    setExperiment('random', log_dir, inputSize=20, outputSize=10, hiddenSize=100, nSamples=1000, epochs=200, batch_size=32, precisionName='float32', precision=torch.float32)

@@ -113,7 +113,7 @@ class Learning:
             outputs = outputs.cuda()
             predictions = model(inputs)
             loss = self.criterion(predictions, outputs)
-            writer.add_scalar('Test', loss.item(), counter)
+            writer.add_scalar('Loss/test', loss.item(), counter)
 
     def test(self, model, testDataset: torch.utils.data.DataLoader, writer):
         model = model.cuda()
@@ -125,4 +125,4 @@ class Learning:
             outputs = outputs.cuda()
             predictions = model(inputs)
             loss = self.criterion(predictions, outputs)
-            writer.add_scalar('Test', loss.item(), counter)
+            writer.add_scalar('Loss/test', loss.item(), counter)

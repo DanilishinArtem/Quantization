@@ -27,6 +27,6 @@ class Generator:
                 # init.zeros_(param.data)
         self.startParameters = [par.data.clone() for par in model.parameters()]
 
-    def generateDataset(self, model):
+    def generateDataset(self):
         self.inputDataset = [torch.randn(3) for _ in range(self.nSamples)]
         self.outputDataset = [torch.randn(10) for _ in range(self.nSamples)]

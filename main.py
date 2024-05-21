@@ -36,12 +36,10 @@ if __name__ == '__main__':
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=32, precisionName='float16', precision=torch.float16)
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=32, precisionName='bfloat16', precision=torch.bfloat16)
     
-    log_dir = '/home/adanilishin/Quantization/logs'
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=64, precisionName='float32', precision=torch.float32)
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=64, precisionName='float16', precision=torch.float16)
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=64, precisionName='bfloat16', precision=torch.bfloat16)
     
-    log_dir = '/home/adanilishin/Quantization/logs'
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=128, precisionName='float32', precision=torch.float32)
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=128, precisionName='float16', precision=torch.float16)
     setExperiment(log_dir, inputSize=3, outputSize=10, hiddenSize=10, nSamples=1000, epochs=50, batch_size=128, precisionName='bfloat16', precision=torch.bfloat16)

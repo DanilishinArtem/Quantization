@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 from gradientLogger import GradientLogger
+from scaler import scale_gradients
 
 
 class Learning:
@@ -45,7 +46,10 @@ class Learning:
                 print(f'epoch {epoch}, loss = {loss.item():.4f}, normOfTrue = {normOfTrue:.4f}, normOfStart = {normOfStart:.4f}')
                 writer.add_scalar('Loss/train', loss.item(), epoch)
                 writer.add_scalar('Norm/True', normOfTrue, epoch)
-                writer.add_scalar('Norm/Start', normOfStart, epoch)            
+                writer.add_scalar('Norm/Start', normOfStart, epoch)
+
+                self.gradLogger.log_gradients(epoch)
+                scale_gradients(model=model, gradient_logger=self.gradLogger)        
 
                 # scaling backward
                 # scaler.scale(loss).backward()
@@ -58,5 +62,4 @@ class Learning:
                 optimizer.step()
 
                 # gradient logging
-                self.gradLogger.log_gradients(epoch)
         self.gradLogger.close()

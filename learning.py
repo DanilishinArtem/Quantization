@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 from gradientLogger import GradientLogger
-from scaler import scale_gradients
+from scaler import scale_gradients, scale_gradients_opt
 
 
 class Learning:
@@ -23,22 +23,16 @@ class Learning:
             counter += 1
         return result
 
-    def train(self, model, criterion, optimizer, writer, epochs=100, precision='fp16'):
+    def train(self, model, criterion, optimizer, writer, epochs=100, precisionName='fp16', precision=torch.float32):
         model = model.cuda()
         scaler = torch.cuda.amp.GradScaler()
-        if precision == 'bf16':
-            autocast_dtype = torch.bfloat16
-        elif precision == 'fp16':
-            autocast_dtype = torch.float16
-        else:
-            autocast_dtype = torch.float32
         for epoch in range(epochs):
             for inputs, outputs in self.dataset:
                 model.train()
                 optimizer.zero_grad()
                 inputs = inputs.cuda()
                 outputs = outputs.cuda()
-                with torch.cuda.amp.autocast(dtype=autocast_dtype):
+                with torch.cuda.amp.autocast(dtype=precision):
                     predictions = model(inputs)
                     loss = criterion(predictions, outputs)
                 normOfTrue = self.getNormOfWeights(model, self.trueParameters)
@@ -63,3 +57,21 @@ class Learning:
 
                 # gradient logging
         self.gradLogger.close()
+
+    def train_opt(self, parameters, model, criterion, optimizer, epochs=100, precision=torch.float32):
+        totalLoss = 0
+        model = model.cuda()
+        for epoch in range(epochs):
+            for inputs, outputs in self.dataset:
+                model.train()
+                optimizer.zero_grad()
+                inputs = inputs.cuda()
+                outputs = outputs.cuda()
+                with torch.cuda.amp.autocast(dtype=precision):
+                    predictions = model(inputs)
+                    loss = criterion(predictions, outputs)
+                    totalLoss += loss.detach().item()
+                scale_gradients_opt(parameters, model=model, gradient_logger=self.gradLogger)        
+                loss.backward()
+                optimizer.step()
+        return totalLoss

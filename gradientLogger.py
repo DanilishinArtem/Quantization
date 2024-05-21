@@ -5,7 +5,7 @@ import numpy as np
 class GradientLogger:
     def __init__(self, model, log_dir):
         self.model = model
-        self.writer = SummaryWriter(log_dir)
+        self.writer = SummaryWriter(log_dir) if log_dir is not None else None
         self.gradient_hooks = []
         self.gradient_distributions = {}
         self._register_hooks()

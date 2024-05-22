@@ -29,6 +29,9 @@ class Generator:
                 # init.zeros_(param.data)
         self.startParameters = [par.data.clone() for par in model.parameters()]
 
-    def generateDataset(self):
+    def generateDataset(self, model):
+        model = model.to('cpu')
+        model.eval()
         self.inputDataset = [torch.randn(self.inputSize) for _ in range(self.nSamples)]
-        self.outputDataset = [torch.randn(self.outputSize) for _ in range(self.nSamples)]
+        self.outputDataset = [torch.tensor(model(self.inputDataset[i]), dtype=torch.float32) for i in range(self.nSamples)]
+        # self.outputDataset = [torch.randn(self.outputSize) for _ in range(self.nSamples)]

@@ -19,7 +19,7 @@ def setExperiment(type: str, log_dir: str, inputSize: int=3, outputSize: int=10,
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     generator = Generator(nSamples, 'normal', (0, 1), inputSize=inputSize, outputSize=outputSize)
-    generator.generateDataset()
+    generator.generateDataset(model)
     generator.saveParameters(model)
     generator.createNewParameters(model)
     dataset = TensorDataset(torch.stack(generator.inputDataset), torch.stack(generator.outputDataset))
@@ -34,7 +34,7 @@ def setExperiment(type: str, log_dir: str, inputSize: int=3, outputSize: int=10,
 
 
     writer = SummaryWriter(log_dir + '/testing')
-    generator.generateDataset()
+    generator.generateDataset(model)
     generator.nSamples = int(0.25 * generator.nSamples)
     testDataset = TensorDataset(torch.stack(generator.inputDataset), torch.stack(generator.outputDataset))
     if type == 'regular':
